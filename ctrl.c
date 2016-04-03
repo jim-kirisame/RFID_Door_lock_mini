@@ -18,12 +18,12 @@ INT8U req_card_sn( INT8U card_sn[] )
 	{
 		return FALSE;	
 	}
-	
+	/**
 	if( PcdSelect( &CardRevBuf[2] ) != MI_OK )//??
 	{
 		return FALSE;	
 	}
-	
+	**/
 	memcpy( &card_sn[0], &CardRevBuf[2], 4 );
 
 	return TRUE;

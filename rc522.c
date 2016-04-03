@@ -63,9 +63,9 @@ void SPIWriteByte(unsigned char SPIData)
 unsigned char ReadRawRC(unsigned char Address)
 {
 	unsigned char ucAddr;
-    unsigned char ucResult=0;
+  unsigned char ucResult=0;
 	CLR_SPI_CS;
-    ucAddr = ((Address<<1)&0x7E)|0x80;
+  ucAddr = ((Address<<1)&0x7E)|0x80;
 	SPIWriteByte(ucAddr);
 	ucResult=SPIReadByte();
 	SET_SPI_CS;
@@ -111,29 +111,6 @@ void SetBitMask(unsigned char reg,unsigned char mask)
     char tmp = 0x00;
     tmp = ReadRawRC(reg);
     WriteRawRC(reg,tmp | mask);  // set bit mask
-}
-
-/////////////////////////////////////////////////////////////////////
-//用MF522计算CRC16函数
-/////////////////////////////////////////////////////////////////////
-void CalulateCRC(unsigned char *pIndata,unsigned char len,unsigned char *pOutData)
-{
-    unsigned char i,n;
-    ClearBitMask(DivIrqReg,0x04);
-    WriteRawRC(CommandReg,PCD_IDLE);
-    SetBitMask(FIFOLevelReg,0x80);
-    for (i=0; i<len; i++)
-    {   WriteRawRC(FIFODataReg, *(pIndata+i));   }
-    WriteRawRC(CommandReg, PCD_CALCCRC);
-    i = 0xFF;
-    do 
-    {
-        n = ReadRawRC(DivIrqReg);
-        i--;
-    }
-    while ((i!=0) && !(n&0x04));
-    pOutData[0] = ReadRawRC(CRCResultRegL);
-    pOutData[1] = ReadRawRC(CRCResultRegM);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -322,44 +299,6 @@ char PcdAnticoll(unsigned char *pSnr)
 }
 
 /////////////////////////////////////////////////////////////////////
-//功    能：选定卡片
-//参数说明: pSnr[IN]:卡片序列号，4字节
-//返    回: 成功返回MI_OK
-/////////////////////////////////////////////////////////////////////
-char PcdSelect(unsigned char *pSnr)
-{
-    char status;
-    unsigned char i;
-    unsigned int unLen;
-    unsigned char ucComMF522Buf[MAXRLEN]; 
-    
-    ucComMF522Buf[0] = PICC_ANTICOLL1;
-    ucComMF522Buf[1] = 0x70;
-    ucComMF522Buf[6] = 0;
-    for (i=0; i<4; i++)
-    {
-    	ucComMF522Buf[i+2] = *(pSnr+i);
-    	ucComMF522Buf[6]  ^= *(pSnr+i);
-    }
-    CalulateCRC(ucComMF522Buf,7,&ucComMF522Buf[7]);
-  
-    ClearBitMask(Status2Reg,0x08);
-
-    status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,9,ucComMF522Buf,&unLen);
-    
-    if ((status == MI_OK) && (unLen == 0x18))
-    {   
-		status = MI_OK;  
-	}
-    else
-    {   
-		status = MI_ERR;    
-	}
-
-    return status;
-}
-
-/////////////////////////////////////////////////////////////////////
 //功    能：复位RC522
 //返    回: 成功返回MI_OK
 /////////////////////////////////////////////////////////////////////
@@ -437,104 +376,3 @@ void init_rc522(void)
   PcdAntennaOn();
   M500PcdConfigISOType( 'A' );
 }
-
-/////////////////////////////////////////////////////////////////////
-//功    能：扣款和充值
-//参数说明: dd_mode[IN]：命令字
-//               0xC0 = 扣款
-//               0xC1 = 充值
-//          addr[IN]：钱包地址
-//          pValue[IN]：4字节增(减)值，低位在前
-//返    回: 成功返回MI_OK
-/////////////////////////////////////////////////////////////////////                 
-/*char PcdValue(unsigned char dd_mode,unsigned char addr,unsigned char *pValue)
-{
-    char status;
-    unsigned int  unLen;
-    unsigned char ucComMF522Buf[MAXRLEN]; 
-    //unsigned char i;
-	
-    ucComMF522Buf[0] = dd_mode;
-    ucComMF522Buf[1] = addr;
-    CalulateCRC(ucComMF522Buf,2,&ucComMF522Buf[2]);
- 
-    status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,4,ucComMF522Buf,&unLen);
-
-    if ((status != MI_OK) || (unLen != 4) || ((ucComMF522Buf[0] & 0x0F) != 0x0A))
-    {   status = MI_ERR;   }
-        
-    if (status == MI_OK)
-    {
-        memcpy(ucComMF522Buf, pValue, 4);
-        //for (i=0; i<16; i++)
-        //{    ucComMF522Buf[i] = *(pValue+i);   }
-        CalulateCRC(ucComMF522Buf,4,&ucComMF522Buf[4]);
-        unLen = 0;
-        status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,6,ucComMF522Buf,&unLen);
-		if (status != MI_ERR)
-        {    status = MI_OK;    }
-    }
-    
-    if (status == MI_OK)
-    {
-        ucComMF522Buf[0] = PICC_TRANSFER;
-        ucComMF522Buf[1] = addr;
-        CalulateCRC(ucComMF522Buf,2,&ucComMF522Buf[2]); 
-   
-        status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,4,ucComMF522Buf,&unLen);
-
-        if ((status != MI_OK) || (unLen != 4) || ((ucComMF522Buf[0] & 0x0F) != 0x0A))
-        {   status = MI_ERR;   }
-    }
-    return status;
-}*/
-
-/////////////////////////////////////////////////////////////////////
-//功    能：备份钱包
-//参数说明: sourceaddr[IN]：源地址
-//          goaladdr[IN]：目标地址
-//返    回: 成功返回MI_OK
-/////////////////////////////////////////////////////////////////////
-/*char PcdBakValue(unsigned char sourceaddr, unsigned char goaladdr)
-{
-    char status;
-    unsigned int  unLen;
-    unsigned char ucComMF522Buf[MAXRLEN]; 
-
-    ucComMF522Buf[0] = PICC_RESTORE;
-    ucComMF522Buf[1] = sourceaddr;
-    CalulateCRC(ucComMF522Buf,2,&ucComMF522Buf[2]);
- 
-    status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,4,ucComMF522Buf,&unLen);
-
-    if ((status != MI_OK) || (unLen != 4) || ((ucComMF522Buf[0] & 0x0F) != 0x0A))
-    {   status = MI_ERR;   }
-    
-    if (status == MI_OK)
-    {
-        ucComMF522Buf[0] = 0;
-        ucComMF522Buf[1] = 0;
-        ucComMF522Buf[2] = 0;
-        ucComMF522Buf[3] = 0;
-        CalulateCRC(ucComMF522Buf,4,&ucComMF522Buf[4]);
- 
-        status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,6,ucComMF522Buf,&unLen);
-		if (status != MI_ERR)
-        {    status = MI_OK;    }
-    }
-    
-    if (status != MI_OK)
-    {    return MI_ERR;   }
-    
-    ucComMF522Buf[0] = PICC_TRANSFER;
-    ucComMF522Buf[1] = goaladdr;
-
-    CalulateCRC(ucComMF522Buf,2,&ucComMF522Buf[2]);
- 
-    status = PcdComMF522(PCD_TRANSCEIVE,ucComMF522Buf,4,ucComMF522Buf,&unLen);
-
-    if ((status != MI_OK) || (unLen != 4) || ((ucComMF522Buf[0] & 0x0F) != 0x0A))
-    {   status = MI_ERR;   }
-
-    return status;
-}*/
