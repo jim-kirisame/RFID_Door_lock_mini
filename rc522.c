@@ -135,12 +135,6 @@ char PcdComMF522(unsigned char Command,
     unsigned int i;
     switch (Command)
     {
-			/**
-			case PCD_AUTHENT:
-				irqEn   = 0x12;
-				waitFor = 0x10;
-				break;
-			**/
 			case PCD_TRANSCEIVE:
 				irqEn   = 0x77;
 				waitFor = 0x30;

@@ -1,10 +1,8 @@
 #include "include.h"
 
-extern const INT8U DefaultKeyABuf[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+data unsigned char CardRevBuf[16] = { 0 };
 
-data INT8U CardRevBuf[16] = { 0 };
-
-INT8U req_card_sn( INT8U card_sn[] )
+unsigned char req_card_sn( unsigned char card_sn[] )
 {
 	if( PcdRequest( PICC_REQIDL, &CardRevBuf[0] ) != MI_OK )//寻天线区内未进入休眠状态的卡，返回卡片类型 2字节	
 	{
@@ -18,12 +16,6 @@ INT8U req_card_sn( INT8U card_sn[] )
 	{
 		return FALSE;	
 	}
-	/**
-	if( PcdSelect( &CardRevBuf[2] ) != MI_OK )//??
-	{
-		return FALSE;	
-	}
-	**/
 	memcpy( &card_sn[0], &CardRevBuf[2], 4 );
 
 	return TRUE;
