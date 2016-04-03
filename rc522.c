@@ -135,16 +135,18 @@ char PcdComMF522(unsigned char Command,
     unsigned int i;
     switch (Command)
     {
-        case PCD_AUTHENT:
-			irqEn   = 0x12;
-			waitFor = 0x10;
-			break;
-		case PCD_TRANSCEIVE:
-			irqEn   = 0x77;
-			waitFor = 0x30;
-			break;
-		default:
-			break;
+			/**
+			case PCD_AUTHENT:
+				irqEn   = 0x12;
+				waitFor = 0x10;
+				break;
+			**/
+			case PCD_TRANSCEIVE:
+				irqEn   = 0x77;
+				waitFor = 0x30;
+				break;
+			default:
+				break;
     }
    
     WriteRawRC(ComIEnReg,irqEn|0x80);
@@ -152,19 +154,17 @@ char PcdComMF522(unsigned char Command,
     WriteRawRC(CommandReg,PCD_IDLE);
     SetBitMask(FIFOLevelReg,0x80);
     
-    for (i=0; i<InLenByte; i++)
-    {   
-		WriteRawRC(FIFODataReg, pInData[i]);    
-	}
+    for (i=0; i<InLenByte; i++) {   
+			WriteRawRC(FIFODataReg, pInData[i]);    
+		}
     WriteRawRC(CommandReg, Command);
    
-    if (Command == PCD_TRANSCEIVE)
-    {    
-		SetBitMask(BitFramingReg,0x80);  
-	}
+    if (Command == PCD_TRANSCEIVE) {    
+			SetBitMask(BitFramingReg,0x80);  
+		}
     
     //i = 600;//根据时钟频率调整，操作M1卡最大等待时间25ms
-	i = 2000;
+		i = 2000;
     do 
     {
         n = ReadRawRC(ComIrqReg);
