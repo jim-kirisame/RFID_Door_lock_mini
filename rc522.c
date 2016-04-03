@@ -79,10 +79,10 @@ unsigned char ReadRawRC(unsigned char Address)
 /////////////////////////////////////////////////////////////////////
 void WriteRawRC(unsigned char Address, unsigned char value)
 {  
-    unsigned char ucAddr;
+	unsigned char ucAddr;
 
 	CLR_SPI_CS;
-    ucAddr = ((Address<<1)&0x7E);
+	ucAddr = ((Address<<1)&0x7E);
 	SPIWriteByte(ucAddr);
 	SPIWriteByte(value);
 	SET_SPI_CS;
@@ -305,45 +305,44 @@ char PcdAnticoll(unsigned char *pSnr)
 char PcdReset(void)
 {
 	SET_RC522RST;
-    delay_ns(10);
+	delay_ns(10);
 	CLR_RC522RST;
-    delay_ns(10);
+	delay_ns(10);
 	SET_RC522RST;
-    delay_ns(10);
-    WriteRawRC(CommandReg,PCD_RESETPHASE);
-    delay_ns(10);
+	delay_ns(10);
+	WriteRawRC(CommandReg,PCD_RESETPHASE);
+	delay_ns(10);
     
-    WriteRawRC(ModeReg,0x3D);            //和Mifare卡通讯，CRC初始值0x6363
-    WriteRawRC(TReloadRegL,30);           
-    WriteRawRC(TReloadRegH,0);
-    WriteRawRC(TModeReg,0x8D);
-    WriteRawRC(TPrescalerReg,0x3E);
+	WriteRawRC(ModeReg,0x3D);            //和Mifare卡通讯，CRC初始值0x6363
+	WriteRawRC(TReloadRegL,30);           
+	WriteRawRC(TReloadRegH,0);
+	WriteRawRC(TModeReg,0x8D);
+	WriteRawRC(TPrescalerReg,0x3E);
 	
 	WriteRawRC(TxAutoReg,0x40);//必须要
    
-    return MI_OK;
+	return MI_OK;
 }
 //////////////////////////////////////////////////////////////////////
 //设置RC632的工作方式 
 //////////////////////////////////////////////////////////////////////
 char M500PcdConfigISOType(unsigned char type)
 {
-   if (type == 'A')                     //ISO14443_A
-   { 
-       ClearBitMask(Status2Reg,0x08);
-       WriteRawRC(ModeReg,0x3D);//3F
-       WriteRawRC(RxSelReg,0x86);//84
-       WriteRawRC(RFCfgReg,0x7F);   //4F
-   	   WriteRawRC(TReloadRegL,30);//tmoLength);// TReloadVal = 'h6a =tmoLength(dec) 
-	   WriteRawRC(TReloadRegH,0);
-       WriteRawRC(TModeReg,0x8D);
-	   WriteRawRC(TPrescalerReg,0x3E);
-	   delay_ns(1000);
-       PcdAntennaOn();
-   }
-   else{ return -1; }
+	if (type == 'A') {                    //ISO14443_A
+		ClearBitMask(Status2Reg,0x08);
+		WriteRawRC(ModeReg,0x3D);//3F
+		WriteRawRC(RxSelReg,0x86);//84
+		WriteRawRC(RFCfgReg,0x7F);   //4F
+		WriteRawRC(TReloadRegL,30);//tmoLength);// TReloadVal = 'h6a =tmoLength(dec) 
+		WriteRawRC(TReloadRegH,0);
+		WriteRawRC(TModeReg,0x8D);
+		WriteRawRC(TPrescalerReg,0x3E);
+		delay_ns(1000);
+		PcdAntennaOn();
+	}
+	else{ return -1; }
    
-   return MI_OK;
+	return MI_OK;
 }
 
 /////////////////////////////////////////////////////////////////////
