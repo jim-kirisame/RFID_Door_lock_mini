@@ -136,6 +136,7 @@ sbit  spi_rst=P1^6;
 #define SET_RC522RST  spi_rst=1
 #define CLR_RC522RST  spi_rst=0
 
+extern void delay_ns(unsigned int ns);
 extern char PcdReset(void);
 extern char PcdRequest(unsigned char req_code,unsigned char *pTagType);
 extern void PcdAntennaOn(void);

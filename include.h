@@ -7,5 +7,6 @@
 #include "main.h"
 #include "rc522.h"
 #include "ctrl.h"
+#include "EEPROM.h"
 
 #endif
